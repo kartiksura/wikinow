@@ -100,5 +100,10 @@ func mediaWikiCall(title string) (op string, err error) {
 	for _, pg := range response.Query.Pages {
 		page = &pg
 	}
-	return page.Revisions[0].Body, nil
+	if len(page.Revisions) > 0 {
+		return page.Revisions[0].Body, nil
+
+	}
+	return "", nil
+
 }

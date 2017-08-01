@@ -32,21 +32,37 @@ func CheckIfReqAlive(reqID string) bool {
 	return false
 }
 
-func SetNewRequest(to int64) (s string, err error) {
+func SetNewRequest(src string, dst string, to int) (s string, err error) {
 	uuid, err := exec.Command("uuidgen").Output()
 	if err != nil {
 		return
 	}
 	s = string(uuid)
+	s = strings.Trim(s, "\n")
 	log.Println("New job:", s)
 	now := time.Now()
-	err = cache.Set("REQID_TO:"+s, fmt.Sprint(now.Unix()+to))
+	err = cache.Set("REQID_TO:"+s, fmt.Sprintf("%d", now.Unix()+int64(to)))
+	if err != nil {
+		return
+	}
+	err = cache.Set("REQ_DETAIL:"+s, fmt.Sprintf("%s|%s", src, dst))
 	if err != nil {
 		return
 	}
 	return s, nil
 }
 
+func GetRequestDetail(id string) (string, string, error) {
+	ans, err := cache.Get("REQ_DETAIL:" + id)
+	if err != nil {
+		return "", "", err
+	}
+	detail := strings.Split(ans, "|")
+	if len(detail) != 2 {
+		return "", "", fmt.Errorf("internal request serialization error")
+	}
+	return detail[0], detail[1], nil
+}
 func Solution(src, dst string) (string, error) {
 	ans, err := cache.Get("SOLUTION:" + src + ":" + dst)
 	if err != nil {
