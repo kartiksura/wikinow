@@ -9,15 +9,64 @@ import (
 )
 
 var (
-	Pool *redis.Pool
+	pool *redis.Pool
 )
+
+//GetString returns the value for the key in the redis
+func GetString(key string) (string, error) {
+	conn := pool.Get()
+	defer conn.Close()
+
+	data, err := redis.String(conn.Do("GET", key))
+	if err != nil {
+		return "", fmt.Errorf("error getting key %s: %v", key, err)
+	}
+	return data, err
+}
+
+//SetString stores the value against the key in redis
+func SetString(key string, value string) error {
+	conn := pool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("SET", key, value)
+	if err != nil {
+		return fmt.Errorf("error setting key %s to %v: %v", key, value, err)
+	}
+	return err
+}
+
+//EnQueue inserts an object in the redis list
+func EnQueue(key, value interface{}) error {
+	conn := pool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("LPUSH", key, value)
+	if err != nil {
+		return fmt.Errorf("error LPUSH key %s to %v: %v", key, value, err)
+	}
+	return err
+}
+
+//DeQueue retrieves the head of the list in redis
+func DeQueue(key string) (interface{}, error) {
+	conn := pool.Get()
+	defer conn.Close()
+
+	var data []byte
+	data, err := redis.Bytes(conn.Do("LPOP", key))
+	if err != nil {
+		return nil, fmt.Errorf("error LPOP key %s: %v", key, err)
+	}
+	return data, err
+}
 
 func init() {
 	redisHost := os.Getenv("REDIS_HOST")
 	if redisHost == "" {
 		redisHost = ":6379"
 	}
-	Pool = newPool(redisHost)
+	pool = newPool(redisHost)
 }
 
 func newPool(server string) *redis.Pool {
@@ -40,60 +89,4 @@ func newPool(server string) *redis.Pool {
 			return err
 		},
 	}
-}
-
-func Get(key string) (string, error) {
-
-	conn := Pool.Get()
-	defer conn.Close()
-
-	var data []byte
-	data, err := redis.Bytes(conn.Do("GET", key))
-	if err != nil {
-		return string(data), fmt.Errorf("error getting key %s: %v", key, err)
-	}
-	return string(data), err
-}
-
-func Set(key string, value string) error {
-
-	conn := Pool.Get()
-	defer conn.Close()
-
-	_, err := conn.Do("SET", key, value)
-	if err != nil {
-		v := string(value)
-		if len(v) > 15 {
-			v = v[0:12] + "..."
-		}
-		return fmt.Errorf("error setting key %s to %s: %v", key, v, err)
-	}
-	return err
-}
-
-func EnQueue(key, value string) error {
-	conn := Pool.Get()
-	defer conn.Close()
-
-	_, err := conn.Do("LPUSH", key, value)
-	if err != nil {
-		v := string(value)
-		if len(v) > 15 {
-			v = v[0:12] + "..."
-		}
-		return fmt.Errorf("error LPUSH key %s to %s: %v", key, v, err)
-	}
-	return err
-}
-
-func DeQueue(key string) (string, error) {
-	conn := Pool.Get()
-	defer conn.Close()
-
-	var data []byte
-	data, err := redis.Bytes(conn.Do("LPOP", key))
-	if err != nil {
-		return string(data), fmt.Errorf("error LPOP key %s: %v", key, err)
-	}
-	return string(data), err
 }

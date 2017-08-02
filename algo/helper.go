@@ -3,83 +3,48 @@ package algo
 import (
 	"fmt"
 	"log"
-	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/kartiksura/wikinow/cache"
 )
 
-func CheckIfReqAlive(reqID string) bool {
-	ans, err := cache.Get("REQID_TO:" + reqID)
+//CheckIfJobAlive returns true if the ttl is valid
+func CheckIfJobAlive(reqID string) bool {
+	ans, err := GetJob(reqID)
 	log.Println("ReqID:", reqID, ":", ans)
 	if err != nil {
+		log.Println("Job dead", err)
 		return false
 	}
+	req := ans.ReqTime
+	ttl := ans.TTL
+	log.Println("Expiry:", reqID, ":", req.Add(time.Duration(ttl)*time.Second))
 
-	i, err := strconv.ParseInt(ans, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	tm := time.Unix(i, 0)
-	now := time.Now()
-	log.Println("Now:", now.Unix())
-	if tm.After(now) {
-		log.Println("Req live:", reqID)
+	if req.Add(time.Duration(ttl)*time.Second).After(time.Now()) == true {
+		log.Println("Job live")
 		return true
 	}
+	log.Println("Job dead")
 	return false
 }
 
-func SetNewRequest(src string, dst string, to int) (s string, err error) {
-	uuid, err := exec.Command("uuidgen").Output()
+//GetSolution returns the existing solution for the path
+func GetSolution(src, dst string) ([]string, error) {
+	log.Println("SOLUTION:" + src + ":" + dst)
+	ans, err := cache.GetString("SOLUTION:" + src + ":" + dst)
 	if err != nil {
-		return
+		return nil, fmt.Errorf("solution not found: %v", err)
 	}
-	s = string(uuid)
-	s = strings.Trim(s, "\n")
-	log.Println("New job:", s)
-	now := time.Now()
-	err = cache.Set("REQID_TO:"+s, fmt.Sprintf("%d", now.Unix()+int64(to)))
-	if err != nil {
-		return
-	}
-	err = cache.Set("REQ_DETAIL:"+s, fmt.Sprintf("%s|%s", src, dst))
-	if err != nil {
-		return
-	}
-	return s, nil
+	return strings.Split(ans, "|"), nil
 }
 
-func GetRequestDetail(id string) (string, string, error) {
-	ans, err := cache.Get("REQ_DETAIL:" + id)
-	if err != nil {
-		return "", "", err
-	}
-	detail := strings.Split(ans, "|")
-	if len(detail) != 2 {
-		return "", "", fmt.Errorf("internal request serialization error")
-	}
-	return detail[0], detail[1], nil
-}
-func Solution(src, dst string) (string, error) {
-	ans, err := cache.Get("SOLUTION:" + src + ":" + dst)
-	if err != nil {
-		return "", err
-	}
-	return ans, nil
-}
-
-func KillReq(reqID string) error {
-	return cache.Set("REQID_STATUS:"+reqID, "ERROR")
-}
-
+//SetSolution sets the path for future re-use
 func SetSolution(path []string) error {
 	log.Println("SETTTING SOLUTION:", path)
 	for i := 0; i < len(path)-1; i++ {
-		log.Println("SOLUTION:"+path[i]+":"+path[len(path)-1], strings.Join(path[i:], "|"))
-		err := cache.Set("SOLUTION:"+path[i]+":"+path[len(path)-1], strings.Join(path[i:], "|"))
+		// log.Println("SOLUTION:"+path[i]+":"+path[len(path)-1], "value", strings.Join(path[i:], "|"))
+		err := cache.SetString("SOLUTION:"+path[i]+":"+path[len(path)-1], strings.Join(path[i:], "|"))
 		if err != nil {
 			return err
 		}
@@ -87,18 +52,26 @@ func SetSolution(path []string) error {
 	return nil
 }
 
-func SetState(reqID string) error {
-
-	return cache.Set("REQID_STATUS:"+reqID, "SOLVED")
+//SetJobState sets the state of the job
+func SetJobState(reqID string, state string) error {
+	log.Println("Setting job state:", reqID, state)
+	j, err := GetJob(reqID)
+	if err != nil {
+		return err
+	}
+	j.State = state
+	j.Latency = time.Now()
+	return SetJob(j)
 }
 
-func CheckIfReqSolved(reqID string) bool {
-	ans, err := cache.Get("REQID_STATUS:" + reqID)
+//CheckIfJobSolved checks if we need to still work on the req
+func CheckIfJobSolved(reqID string) bool {
+	j, err := GetJob(reqID)
 	if err != nil {
 		return false
 	}
-
-	if ans == "SOLVED" {
+	if j.State == "SOLVED" {
+		log.Println("job solved")
 		return true
 	}
 	return false
