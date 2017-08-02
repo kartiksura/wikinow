@@ -35,13 +35,18 @@ The output is a  json object containing the requestID:
 http://localhost:8080/solution?id=15069b34-23c7-42a0-ad32-22a36fccdece
 
 The output is a json object containing the status of the JOB:
-{"ID":"15069b34-23c7-42a0-ad32-22a36fccdece","Status":"SOLVED_FROM_CACHE","Path":["Mike Tyson","South by Southwest","The Daily Mirror","Heavyweight"],"ProcessingTime":"5.0327ms"}
+{
+	"ID": "15069b34-23c7-42a0-ad32-22a36fccdece",
+	"Status": "SOLVED_FROM_CACHE",
+	"Path": ["Mike Tyson", "South by Southwest", "The Daily Mirror", "Heavyweight"],
+	"ProcessingTime": "5.0327ms"
+}
 
 The Path field contains the path from Source to Destination
 
 
 ## TODO:
-Unit test cases.
-Stats monitoring.
-Dockerisation.
-Storing advanced sub-results
+- Unit test cases.
+- Stats monitoring.
+- Dockerisation.
+- Storing advanced sub-results
