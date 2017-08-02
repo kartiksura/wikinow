@@ -2,10 +2,10 @@ package cache
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/kartiksura/wikinow/conf"
 )
 
 var (
@@ -62,11 +62,7 @@ func DeQueue(key string) (interface{}, error) {
 }
 
 func init() {
-	redisHost := os.Getenv("REDIS_HOST")
-	if redisHost == "" {
-		redisHost = ":6379"
-	}
-	pool = newPool(redisHost)
+	pool = newPool(conf.WikiNowConfig.Redis.HostPort)
 }
 
 func newPool(server string) *redis.Pool {

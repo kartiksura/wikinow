@@ -4,12 +4,13 @@ import (
 	"time"
 
 	"github.com/kartiksura/wikinow/algo"
+	"github.com/kartiksura/wikinow/conf"
 )
 
 var Sem chan bool
 
 func init() {
-	Sem = make(chan bool, 5000)
+	Sem = make(chan bool, conf.WikiNowConfig.Server.ConcurrentJobs)
 	go Dispatcher()
 }
 
