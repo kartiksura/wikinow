@@ -26,11 +26,12 @@ The dispatcher continuously monitors the list for new jobs, and spawns a gorouti
 The goroutine then gets the titles associated with the current job and creates new jobs for fan-out.
 The sub-results are also cached for future use.
 
-Job status control:
+### Job status control:
 Each job as a Request ID. The fanout jobs also has the same request ID.
-E.g.  Job: Mike Tyson -> New York, Path: nil (ReqID 123) spawns 2 jobs:
-Job: SXSW -> NewYork, Path: [Mike Tyson] (ReqID 123)
-Job: Pro Boxing -> New York, Path:[Mike Tyson] (ReqID 123)
+E.g.  
+- Mike Tyson -> New York, Path: nil (ReqID 123) spawns 2 jobs:
+- SXSW -> NewYork, Path: [Mike Tyson] (ReqID 123)
+- Pro Boxing -> New York, Path:[Mike Tyson] (ReqID 123)
 
 Whenever the Job is picked up, the status of the request ID is checked in redis:
 1. If the timeout expired
@@ -40,7 +41,7 @@ This method of state communication helps in horizontally scaling and also effici
 
 
 
-Techniques used:
+## Techniques used:
 1. Concurrency control by using buffered channel
 2. Exponential back-off for polling the redis list
 
