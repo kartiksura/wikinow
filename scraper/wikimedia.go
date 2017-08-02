@@ -65,8 +65,6 @@ func mediaWikiCall(title string) (op string, err error) {
 
 	q := u.Query()
 	u.RawQuery = q.Encode()
-	log.Println(param)
-	log.Println(u.String())
 
 	if err != nil {
 		log.Fatal(err)

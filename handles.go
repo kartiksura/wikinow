@@ -23,7 +23,6 @@ type JobStatus struct {
 }
 
 func racer(w http.ResponseWriter, r *http.Request) {
-	log.Println("new job request")
 	queryValues := r.URL.Query()
 	src := queryValues.Get("src")
 	dst := queryValues.Get("dst")
@@ -56,7 +55,6 @@ func racer(w http.ResponseWriter, r *http.Request) {
 }
 
 func solution(w http.ResponseWriter, r *http.Request) {
-	log.Println("new solution request")
 	queryValues := r.URL.Query()
 	id := queryValues.Get("id")
 	if id == "" {
@@ -68,21 +66,18 @@ func solution(w http.ResponseWriter, r *http.Request) {
 		j.Status = "TIMEOUT"
 	}
 	if algo.CheckIfJobSolved(id) == true {
-		log.Println("job solved")
-
 		job, err := algo.GetJob(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		log.Println("job details:", job)
 		ans, err := algo.GetSolution(job.Src, job.Dst)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		j.Path = ans
-		j.Status = "Solved"
+		j.Status = job.State
 		j.ProcessingTime = job.Latency.Sub(job.ReqTime).String()
 	}
 	js, err := json.Marshal(j)

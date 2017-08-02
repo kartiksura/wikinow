@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"log"
 	"strings"
 )
 
@@ -20,8 +19,6 @@ func getWikiTitles(body string) (ans [][]string) {
 	}
 	for i := range op {
 		ans = append(ans, strings.Split(op[i], "|"))
-		log.Println("Tags:", strings.Split(op[i], "|"))
-
 	}
 	return
 }

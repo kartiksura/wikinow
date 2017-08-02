@@ -2,7 +2,6 @@ package algo
 
 import (
 	"encoding/json"
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -42,7 +41,6 @@ func NewJob(src, dst string, to string) (Job, error) {
 	}
 
 	j.ReqID = strings.Trim(string(uuid), "\n")
-	log.Println("New Job:", j)
 	return j, nil
 }
 
@@ -51,7 +49,6 @@ func GetJob(id string) (Job, error) {
 	ans, err := cache.GetString("REQID:" + id)
 	var j Job
 	err = json.Unmarshal([]byte(ans), &j)
-	log.Println("job fetched", j)
 	return j, err
 }
 
