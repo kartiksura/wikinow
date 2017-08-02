@@ -50,3 +50,11 @@ The Path field contains the path from Source to Destination
 - Stats monitoring.
 - Dockerisation.
 - Storing advanced sub-results
+- vendoring
+
+## Installation instructions
+1. Install Redis and point the wikinow.conf to the instance e.g. :6379 for local instance
+2. clone the repo
+3. install the dependencies
+4. go build
+4. run the binary (./wikinow) 
