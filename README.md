@@ -22,8 +22,9 @@ A job has the following:
 3. Timeout in seconds
 
 This job is pushed to the Redis list, which we use as a simple Pub-Sub.
-The dispatcher continuously monitors the list for new jobs, and spaws a goroutine.
+The dispatcher continuously monitors the list for new jobs, and spawns a goroutine.
 The goroutine then gets the titles associated with the current job and creates new jobs for fan-out.
+The sub-results are also cached for future use.
 
 Techniques used:
 1. Concurrency control by using buffered channel
