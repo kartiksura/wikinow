@@ -21,6 +21,18 @@ A job has the following:
 2. Destination wiki title
 3. Timeout in seconds
 
+This job is pushed to the Redis list, which we use as a simple Pub-Sub.
+The dispatcher continuously monitors the list for new jobs, and spaws a goroutine.
+The goroutine then gets the titles associated with the current job and creates new jobs for fan-out.
+
+Techniques used:
+1. Concurrency control by using buffered channel
+2. Exponential back-off for polling the redis list
+
+Further enhancements in future:
+1. Using redis Pub-sub instead of list
+2. Sharding the List for reducing the contention
+
 The user gets a RequestID which can be used to get the status of the job. 
 
 ## API Spec
@@ -49,7 +61,6 @@ The Path field contains the path from Source to Destination
 - Unit test cases.
 - Stats monitoring.
 - Dockerisation.
-- Storing advanced sub-results
 - vendoring
 
 ## Installation instructions
