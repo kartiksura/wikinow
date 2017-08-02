@@ -70,3 +70,6 @@ The Path field contains the path from Source to Destination
 3. install the dependencies
 4. go build
 4. run the binary (./wikinow) 
+
+## Note: 
+Used the struct definitions from an opensource golang wiki media repo for parsing the API output.
