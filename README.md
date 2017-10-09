@@ -2,7 +2,7 @@
 
 ![alt text](https://raw.githubusercontent.com/kartiksura/wikinow/master/wikinow.png)
 
-
+Implements a solution for wiki-racer problem.
 # Aim:
 1. Horizontally scalable (add nodes to scale-up)
 2. Fault tolerant (killing nodes should not affect other tasks/data)
